@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billie Global BR — Sorteio Oficial</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #c0001a;
+    --red-bright: #ff0028;
+    --red-glow: #ff003355;
+    --red-dark: #6b0010;
+    --black: #000000;
+    --black-deep: #050505;
+    --surface: #0a0000;
+    --surface2: #110005;
+    --neon: #ff1a35;
+    --neon-soft: #cc0022;
+    --text: #fff0f0;
+    --text-dim: #aa8888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black-deep);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    overflow: hidden;
+    cursor: default;
+    user-select: none;
+  }
+
+  /* ── CANVAS BG ── */
+  #bgCanvas {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity .8s ease;
+  }
+  .screen.hidden { opacity: 0; pointer-events: none; }
+
+  /* ══════════════════════════════════
+     LOADER
+  ══════════════════════════════════ */
+  #loaderScreen {
+    background: #000;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .loader-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    letter-spacing: .25em;
+    color: var(--red-bright);
+    text-shadow: 0 0 40px var(--red-bright), 0 0 80px var(--red-dark);
+    animation: flicker 2s infinite;
+  }
+  .loader-sub {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.6rem, 2vw, .85rem);
+    letter-spacing: .4em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .loader-bar-wrap {
+    width: min(380px, 80vw);
+    height: 2px;
+    background: #1a0005;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .loader-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--red-dark), var(--red-bright));
+    box-shadow: 0 0 12px var(--red-bright);
+    animation: loadBar 2.4s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  .loader-pct {
+    font-family: 'Orbitron', monospace;
+    font-size: .75rem;
+    color: var(--red-bright);
+    letter-spacing: .2em;
+  }
+  @keyframes loadBar { to { width: 100%; } }
+  @keyframes flicker {
+    0%,100%{opacity:1}10%{opacity:.92}20%{opacity:1}55%{opacity:.85}56%{opacity:1}
+  }
+
+  /* ══════════════════════════════════
+     INTRO
+  ══════════════════════════════════ */
+  #introScreen { gap: 0; }
+
+  .intro-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.5rem,1.5vw,.75rem);
+    letter-spacing: .5em;
+    color: var(--red-bright);
+    border: 1px solid var(--red-dark);
+    padding: 6px 18px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+    text-transform: uppercase;
+    animation: pulse-border 2s infinite;
+  }
+  @keyframes pulse-border {
+    0%,100%{box-shadow:0 0 0 0 var(--red-glow)}
+    50%{box-shadow:0 0 20px 4px var(--red-glow)}
+  }
+
+  .intro-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 12vw, 9rem);
+    line-height: .9;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 60px var(--red-bright), 0 0 120px var(--red-dark);
+    letter-spacing: .04em;
+    animation: title-pulse 3s ease-in-out infinite;
+  }
+  @keyframes title-pulse {
+    0%,100%{text-shadow:0 0 60px var(--red-bright),0 0 120px var(--red-dark)}
+    50%{text-shadow:0 0 100px var(--red-bright),0 0 200px var(--red-dark),0 0 300px #440008}
+  }
+
+  .intro-divider {
+    width: min(500px,80vw);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--red-bright), transparent);
+    margin: 22px 0;
+    box-shadow: 0 0 10px var(--red-bright);
+  }
+
+  .intro-subtitle {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.6rem, 2vw, 1rem);
+    letter-spacing: .3em;
+    text-align: center;
+    color: var(--text-dim);
+    line-height: 1.8;
+    padding: 0 20px;
+  }
+  .intro-subtitle span { color: #fff; }
+
+  .intro-prize {
+    margin-top: 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.8rem,5vw,3.2rem);
+    color: var(--red-bright);
+    letter-spacing: .15em;
+    text-shadow: 0 0 30px var(--red-bright);
+  }
+
+  .intro-count {
+    margin-top: 10px;
+    font-family: 'Orbitron', monospace;
+    font-size: .72rem;
+    letter-spacing: .3em;
+    color: var(--text-dim);
+  }
+  .intro-count span { color: var(--red-bright); }
+
+  .btn-start {
+    margin-top: 42px;
+    padding: 18px 60px;
+    background: transparent;
+    border: 2px solid var(--red-bright);
+    color: #fff;
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.75rem,2vw,1rem);
+    letter-spacing: .4em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all .3s;
+    box-shadow: 0 0 20px var(--red-glow), inset 0 0 20px transparent;
+  }
+  .btn-start::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--red-bright);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .35s ease;
+    z-index: -1;
+  }
+  .btn-start:hover::before { transform: scaleX(1); }
+  .btn-start:hover {
+    box-shadow: 0 0 50px var(--red-bright), inset 0 0 30px rgba(255,0,40,.3);
+    letter-spacing: .5em;
+  }
+  .btn-start:active { transform: scale(.97); }
+
+  /* ══════════════════════════════════
+     PREP
+  ══════════════════════════════════ */
+  #prepScreen { gap: 16px; }
+  .prep-label {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.6rem,2vw,.85rem);
+    letter-spacing: .5em;
+    color: var(--red-bright);
+    text-transform: uppercase;
+  }
+  .prep-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem,8vw,5rem);
+    letter-spacing: .1em;
+    color: #fff;
+    text-shadow: 0 0 40px var(--red-bright);
+  }
+  .prep-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 24px;
+    max-width: 480px;
+    width: 90vw;
+  }
+  .prep-card {
+    background: var(--surface2);
+    border: 1px solid var(--red-dark);
+    border-radius: 6px;
+    padding: 16px 10px;
+    text-align: center;
+    animation: card-flicker 3s infinite;
+  }
+  .prep-card:nth-child(2){animation-delay:.4s}
+  .prep-card:nth-child(3){animation-delay:.8s}
+  @keyframes card-flicker{0%,100%{box-shadow:0 0 8px var(--red-dark)}50%{box-shadow:0 0 20px var(--red-bright)}}
+  .prep-card-label {
+    font-family: 'Orbitron', monospace;
+    font-size: .55rem;
+    letter-spacing: .3em;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .prep-card-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--red-bright);
+    text-shadow: 0 0 12px var(--red-bright);
+  }
+  .prep-progress {
+    margin-top: 28px;
+    width: min(420px,85vw);
+  }
+  .prep-progress-bar-wrap {
+    height: 3px;
+    background: #1a0005;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .prep-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg,var(--red-dark),var(--red-bright));
+    box-shadow: 0 0 10px var(--red-bright);
+    transition: width .05s linear;
+  }
+  .prep-progress-label {
+    display: flex; justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'Orbitron', monospace;
+    font-size: .6rem;
+    letter-spacing: .2em;
+    color: var(--text-dim);
+  }
+  .prep-progress-label span { color: var(--red-bright); }
+  .prep-log {
+    margin-top: 18px;
+    width: min(420px,85vw);
+    font-family: 'Orbitron', monospace;
+    font-size: .6rem;
+    letter-spacing: .15em;
+    color: var(--text-dim);
+    line-height: 1.8;
+    text-align: left;
+    height: 80px;
+    overflow: hidden;
+  }
+
+  /* ══════════════════════════════════
+     MACHINE
+  ══════════════════════════════════ */
+  #machineScreen { gap: 0; justify-content: flex-start; padding-top: 20px; }
+
+  .machine-header {
+    display: flex; align-items: center; justify-content: space-between;
+    width: min(900px, 96vw);
+    padding: 0 8px;
+    margin-bottom: 10px;
+  }
+  .machine-hud {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.5rem,1.5vw,.7rem);
+    letter-spacing: .25em;
+    color: var(--text-dim);
+    line-height: 2;
+  }
+  .machine-hud strong { color: var(--red-bright); }
+  .machine-title-block { text-align: center; }
+  .machine-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.8rem,5vw,3.5rem);
+    letter-spacing: .12em;
+    color: #fff;
+    text-shadow: 0 0 30px var(--red-bright);
+    line-height: 1;
+  }
+  .machine-sub {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.45rem,1.3vw,.65rem);
+    letter-spacing: .3em;
+    color: var(--red-bright);
+    margin-top: 4px;
+  }
+
+  /* Globe */
+  .globe-wrap {
+    position: relative;
+    width: min(500px,90vw);
+    height: min(500px,65vw);
+    margin: 0 auto;
+  }
+  #globeCanvas {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 0 30px var(--red-bright));
+  }
+  .globe-ring {
+    position: absolute;
+    left: 50%; top: 50%;
+    border-radius: 50%;
+    border: 1px solid;
+    transform: translate(-50%,-50%);
+    animation: ring-spin 4s linear infinite;
+    pointer-events: none;
+  }
+  .globe-ring:nth-child(2){
+    width: 108%; height: 108%;
+    border-color: var(--red-dark);
+    opacity: .4;
+  }
+  .globe-ring:nth-child(3){
+    width: 116%; height: 116%;
+    border-color: var(--red-bright);
+    opacity: .15;
+    animation-direction: reverse;
+    animation-duration: 6s;
+  }
+  @keyframes ring-spin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+  .globe-lights {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: globe-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes globe-pulse{0%,100%{box-shadow:0 0 20px 0 var(--red-glow)}50%{box-shadow:0 0 60px 20px var(--red-glow)}}
+
+  /* chosen ball reveal */
+  .chosen-reveal {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%,-50%) scale(0);
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ff4466, var(--red-bright), var(--red-dark));
+    box-shadow: 0 0 60px var(--red-bright), 0 0 120px var(--red-dark);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-family: 'Orbitron', monospace;
+    font-size: .55rem;
+    letter-spacing: .1em;
+    color: #fff;
+    font-weight: 700;
+    padding: 12px;
+    line-height: 1.3;
+    transition: transform 1.2s cubic-bezier(.175,.885,.32,1.275);
+    z-index: 20;
+  }
+  .chosen-reveal.show { transform: translate(-50%,-50%) scale(1); }
+
+  /* Countdown */
+  .countdown-wrap {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    margin-top: 8px;
+  }
+  .countdown-digit {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem,8vw,5rem);
+    color: var(--red-bright);
+    text-shadow: 0 0 30px var(--red-bright), 0 0 60px var(--red-dark);
+    min-width: 60px;
+    text-align: center;
+    transition: all .15s;
+  }
+  .countdown-sep {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem,6vw,4rem);
+    color: var(--red-dark);
+    animation: sep-blink .8s step-start infinite;
+  }
+  @keyframes sep-blink{0%,100%{opacity:1}50%{opacity:0}}
+
+  .machine-status {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.55rem,1.5vw,.75rem);
+    letter-spacing: .35em;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 6px;
+    min-height: 22px;
+  }
+  .machine-status.active { color: var(--red-bright); animation: blink-text 1s step-start infinite; }
+  @keyframes blink-text{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* VU bars */
+  .vu-bars {
+    display: flex; align-items: flex-end; justify-content: center;
+    gap: 3px; height: 40px; margin-top: 10px;
+  }
+  .vu-bar {
+    width: 5px; border-radius: 2px;
+    background: var(--red-bright);
+    box-shadow: 0 0 6px var(--red-bright);
+    animation: vu-anim 0s ease-in-out infinite alternate;
+  }
+
+  /* ══════════════════════════════════
+     WINNER
+  ══════════════════════════════════ */
+  #winnerScreen { gap: 0; }
+  #confettiCanvas {
+    position: fixed; inset: 0; z-index: 5; pointer-events: none;
+  }
+  .winner-eyebrow {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.5rem,1.5vw,.75rem);
+    letter-spacing: .5em;
+    color: var(--red-bright);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    animation: pulse-text 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-text{0%,100%{opacity:1;text-shadow:0 0 0 transparent}50%{opacity:.7;text-shadow:0 0 20px var(--red-bright)}}
+  .winner-trophy {
+    font-size: clamp(3rem,10vw,6rem);
+    animation: trophy-bounce .6s ease-in-out infinite alternate;
+  }
+  @keyframes trophy-bounce{from{transform:scale(1) translateY(0)}to{transform:scale(1.12) translateY(-8px)}}
+  .winner-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem,10vw,7rem);
+    letter-spacing: .08em;
+    color: #fff;
+    text-shadow: 0 0 60px var(--red-bright), 0 0 120px var(--red-dark);
+    line-height: .95;
+    text-align: center;
+    animation: title-pulse 2s ease-in-out infinite;
+  }
+  .winner-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem,9vw,6rem);
+    color: var(--red-bright);
+    text-shadow: 0 0 40px var(--red-bright), 0 0 80px var(--red-dark);
+    letter-spacing: .1em;
+    text-align: center;
+    margin-top: 6px;
+    animation: name-glow 1s ease-in-out infinite alternate;
+  }
+  @keyframes name-glow{
+    from{text-shadow:0 0 40px var(--red-bright),0 0 80px var(--red-dark)}
+    to{text-shadow:0 0 80px var(--red-bright),0 0 160px var(--red-dark),0 0 240px #770010}
+  }
+  .winner-divider {
+    width: min(600px,80vw); height: 1px;
+    background: linear-gradient(90deg,transparent,var(--red-bright),transparent);
+    margin: 20px 0;
+    box-shadow: 0 0 10px var(--red-bright);
+  }
+  .winner-prize-label {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.6rem,2vw,.85rem);
+    letter-spacing: .4em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .winner-prize-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem,7vw,4.5rem);
+    color: #fff;
+    letter-spacing: .1em;
+    text-shadow: 0 0 30px #fff;
+  }
+  .winner-footer {
+    margin-top: 30px;
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(.45rem,1.5vw,.65rem);
+    letter-spacing: .4em;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 2;
+  }
+  .winner-footer strong { color: var(--red-bright); }
+
+  .winner-inner {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px;
+    animation: winner-enter 1.2s cubic-bezier(.175,.885,.32,1.275) forwards;
+    opacity: 0;
+  }
+  @keyframes winner-enter{
+    from{opacity:0;transform:scale(.8) translateY(30px)}
+    to{opacity:1;transform:scale(1) translateY(0)}
+  }
+
+  /* ── SCANLINES overlay ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 999;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 2px,
+      rgba(0,0,0,.06) 2px, rgba(0,0,0,.06) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* ── FLASH overlay ── */
+  #flash {
+    position: fixed; inset: 0; z-index: 998;
+    background: var(--red-bright);
+    opacity: 0; pointer-events: none;
+    transition: opacity .1s;
+  }
+
+  /* ── SHAKE ── */
+  @keyframes shake {
+    0%,100%{transform:translate(0,0) rotate(0deg)}
+    10%{transform:translate(-3px,2px) rotate(-.3deg)}
+    20%{transform:translate(3px,-2px) rotate(.3deg)}
+    30%{transform:translate(-4px,3px) rotate(-.5deg)}
+    40%{transform:translate(4px,-3px) rotate(.5deg)}
+    50%{transform:translate(-2px,4px) rotate(-.2deg)}
+    60%{transform:translate(2px,-4px) rotate(.2deg)}
+    70%{transform:translate(-3px,2px) rotate(-.4deg)}
+    80%{transform:translate(3px,-2px) rotate(.4deg)}
+    90%{transform:translate(-1px,1px) rotate(-.1deg)}
+  }
+  .shaking { animation: shake .15s linear infinite; }
+
+  /* ── Responsive tweaks ── */
+  @media(max-width:480px){
+    .prep-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+    .prep-card-val{font-size:1.2rem}
+    .machine-header{flex-direction:column;gap:8px}
+    .machine-hud{display:none}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<canvas id="confettiCanvas" class="hidden"></canvas>
+<div id="flash"></div>
+
+<!-- ══ LOADER ══ -->
+<div id="loaderScreen" class="screen">
+  <div class="loader-logo">BILLIE GLOBAL BR</div>
+  <div class="loader-sub">Sorteio Oficial — Sistema de Seleção</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-pct" id="loaderPct">0%</div>
+</div>
+
+<!-- ══ INTRO ══ -->
+<div id="introScreen" class="screen hidden">
+  <div class="intro-badge">✦ Sorteio Oficial ✦</div>
+  <div class="intro-title">BILLIE<br>GLOBAL BR</div>
+  <div class="intro-divider"></div>
+  <div class="intro-subtitle">
+    <span>HIT ME HARD AND SOFT: THE TOUR</span><br>
+    LIVE IN 3D — SORTEIO DE INGRESSO
+  </div>
+  <div class="intro-prize">💸 R$ 60,33</div>
+  <div class="intro-count">PARTICIPANTES: <span id="introCount">0</span></div>
+  <button class="btn-start" id="btnStart">▶ INICIAR SORTEIO</button>
+</div>
+
+<!-- ══ PREP ══ -->
+<div id="prepScreen" class="screen hidden">
+  <div class="prep-label">▶ Preparando Sistemas</div>
+  <div class="prep-title">SORTEIO INICIADO</div>
+  <div class="prep-grid">
+    <div class="prep-card">
+      <div class="prep-card-label">Participantes</div>
+      <div class="prep-card-val" id="prepTotal">0</div>
+    </div>
+    <div class="prep-card">
+      <div class="prep-card-label">Bolas</div>
+      <div class="prep-card-val" id="prepBalls">0</div>
+    </div>
+    <div class="prep-card">
+      <div class="prep-card-label">Embaralhamentos</div>
+      <div class="prep-card-val" id="prepShuffle">0</div>
+    </div>
+  </div>
+  <div class="prep-progress">
+    <div class="prep-progress-bar-wrap">
+      <div class="prep-progress-bar" id="prepBar"></div>
+    </div>
+    <div class="prep-progress-label">
+      <span id="prepStatus">INICIALIZANDO...</span>
+      <span id="prepPct">0%</span>
+    </div>
+  </div>
+  <div class="prep-log" id="prepLog"></div>
+</div>
+
+<!-- ══ MACHINE ══ -->
+<div id="machineScreen" class="screen hidden">
+  <div class="machine-header">
+    <div class="machine-hud">
+      <div>SISTEMA: <strong>ATIVO</strong></div>
+      <div>MODO: <strong>SORTEIO AO VIVO</strong></div>
+      <div>STATUS: <strong id="hudStatus">AGUARDANDO</strong></div>
+    </div>
+    <div class="machine-title-block">
+      <div class="machine-title">GLOBO DE SORTEIO</div>
+      <div class="machine-sub">HIT ME HARD AND SOFT: THE TOUR — LIVE IN 3D</div>
+    </div>
+    <div class="machine-hud" style="text-align:right">
+      <div>PRÊMIO: <strong>R$ 60,33</strong></div>
+      <div>PARTICIPANTES: <strong id="hudCount">0</strong></div>
+      <div id="hudClock">00:00:00</div>
+    </div>
+  </div>
+
+  <div class="globe-wrap">
+    <canvas id="globeCanvas"></canvas>
+    <div class="globe-ring"></div>
+    <div class="globe-ring"></div>
+    <div class="globe-lights"></div>
+    <div class="chosen-reveal" id="chosenReveal"></div>
+  </div>
+
+  <div class="countdown-wrap">
+    <span class="countdown-digit" id="cdMin">00</span>
+    <span class="countdown-sep">:</span>
+    <span class="countdown-digit" id="cdSec">00</span>
+    <span class="countdown-sep">:</span>
+    <span class="countdown-digit" id="cdMs">00</span>
+  </div>
+  <div class="machine-status" id="machineStatus">AGUARDANDO INÍCIO...</div>
+
+  <div class="vu-bars" id="vuBars"></div>
+</div>
+
+<!-- ══ WINNER ══ -->
+<div id="winnerScreen" class="screen hidden">
+  <div class="winner-inner" id="winnerInner">
+    <div class="winner-eyebrow">✦ RESULTADO OFICIAL DO SORTEIO ✦</div>
+    <div class="winner-trophy">🏆</div>
+    <div class="winner-heading">PARABÉNS!</div>
+    <div class="winner-name">Luana Couto Santana</div>
+    <div class="winner-divider"></div>
+    <div class="winner-prize-label">Você ganhou o valor do ingresso</div>
+    <div class="winner-prize-val">R$ 60,33</div>
+    <div class="winner-footer">
+      <strong>HIT ME HARD AND SOFT: THE TOUR (LIVE IN 3D)</strong><br>
+      BILLIE GLOBAL BR — SORTEIO OFICIAL<br>
+      RESULTADO VERIFICADO E REGISTRADO
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+const PARTICIPANTS = [
+  "Márcio Luan","Marcelo Henrique","Francisco Breno","Ruanderson Bonfim","Eduardo Dayara",
+  "Igor Alves","Brayan Alves","Bianca Silva","Filipe Augusto","Maria Eduarda",
+  "Ana Clara","João Pedro","Larissa Souza","Camila Rocha","Victor Hugo",
+  "Paulo Henrique","Fernanda Lima","Juliana Alves","Carlos Henrique","Mateus Silva",
+  "Gabriel Santos","Rafaela Oliveira","Amanda Vitória","Lucas Ribeiro","Pedro Lucas",
+  "Isadora Martins","Yasmin Costa","Thiago Souza","Daniel Oliveira","Renata Lima",
+  "Bruno Henrique","Mariana Santos","Julia Ferreira","Natália Gomes","Sophia Lima",
+  "Vitor Almeida","André Luiz","Leonardo Costa","Beatriz Oliveira","Felipe Martins",
+  "Guilherme Rocha","Sarah Vitória","Luana Couto Santana","Arthur Silva","Emilly Souza",
+  "Eduarda Martins","Caio Henrique","Vitória Alves","Murilo Santos","Ruan Oliveira",
+  "Lívia Costa","Henrique Gomes","Alisson Lima","Júlia Rocha","Isa Martins",
+  "Banna Sara","Gustavo Henrique","Nicolas Souza","Ryan Oliveira","Pietra Lima",
+  "Luiza Martins","Melissa Costa","Davi Henrique","Samuel Rocha","Gabriela Alves",
+  "Brenda Lima","Rafaela Santos","Maria Clara","Ana Júlia","João Gabriel",
+  "Pedro Henrique","Miguel Santos","Heitor Lima","Enzo Gabriel","Arthur Henrique",
+  "Theo Martins","Benjamin Costa","Noah Oliveira","Helena Souza","Alice Martins",
+  "Valentina Lima","Cecília Costa","Laura Oliveira","Heloísa Santos","Antonella Lima",
+  "Esther Rocha","Clara Martins","Agatha Souza","Maitê Costa","Yuri Henrique",
+  "Kauan Lima","Kevin Martins","Bryan Costa","Emanuel Oliveira","Cristian Santos",
+  "Pablo Henrique","Vinicius Lima","Jean Martins","Diego Costa","Nathan Oliveira",
+  "Otávio Santos","Lucca Henrique","Erick Lima","Igor Martins"
+];
+const WINNER = "Luana Couto Santana";
+const WINNER_IDX = PARTICIPANTS.indexOf(WINNER);
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+function show(id) { $(id).classList.remove('hidden'); }
+function hide(id) { $(id).classList.add('hidden'); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function flash(ms=80) {
+  const f = $('flash'); f.style.opacity=.7;
+  setTimeout(()=>f.style.opacity=0, ms);
+}
+
+// ═══════════════════════════════════════════════════
+// BG PARTICLES
+// ═══════════════════════════════════════════════════
+const bgCvs = $('bgCanvas');
+const bgCtx = bgCvs.getContext('2d');
+let bgW, bgH, bgParts = [];
+
+function resizeBg() {
+  bgW = bgCvs.width = window.innerWidth;
+  bgH = bgCvs.height = window.innerHeight;
+}
+
+function initBgParts() {
+  bgParts = [];
+  const n = Math.min(120, Math.floor(bgW*bgH/8000));
+  for (let i=0;i<n;i++) bgParts.push({
+    x: Math.random()*bgW, y: Math.random()*bgH,
+    r: Math.random()*2+.5,
+    vx: (Math.random()-.5)*.4, vy: (Math.random()-.5)*.4,
+    a: Math.random(),
+    hue: Math.random()<.8 ? 0 : 10
+  });
+}
+
+function tickBg() {
+  bgCtx.clearRect(0,0,bgW,bgH);
+  // deep vignette
+  const vgr = bgCtx.createRadialGradient(bgW/2,bgH/2,bgH*.1,bgW/2,bgH/2,bgH*.8);
+  vgr.addColorStop(0,'rgba(30,0,5,.0)');
+  vgr.addColorStop(1,'rgba(0,0,0,.7)');
+  bgCtx.fillStyle=vgr; bgCtx.fillRect(0,0,bgW,bgH);
+
+  for (const p of bgParts) {
+    p.x += p.vx; p.y += p.vy;
+    p.a += .005;
+    if (p.x<0)p.x=bgW; if (p.x>bgW)p.x=0;
+    if (p.y<0)p.y=bgH; if (p.y>bgH)p.y=0;
+    const alpha = (.3+.3*Math.sin(p.a))*(.5+p.r/3);
+    bgCtx.beginPath();
+    bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCtx.fillStyle = `hsla(${p.hue},100%,60%,${alpha})`;
+    bgCtx.shadowColor = `hsl(${p.hue},100%,60%)`;
+    bgCtx.shadowBlur = 8;
+    bgCtx.fill();
+    bgCtx.shadowBlur = 0;
+  }
+  requestAnimationFrame(tickBg);
+}
+
+resizeBg(); initBgParts(); tickBg();
+window.addEventListener('resize', ()=>{ resizeBg(); initBgParts(); });
+
+// ═══════════════════════════════════════════════════
+// VU BARS
+// ═══════════════════════════════════════════════════
+function buildVU() {
+  const wrap = $('vuBars'); wrap.innerHTML='';
+  for (let i=0;i<32;i++){
+    const b = document.createElement('div');
+    b.className='vu-bar';
+    const dur = (.2+Math.random()*.6).toFixed(2)+'s';
+    const h = (10+Math.random()*30).toFixed(0)+'px';
+    b.style.cssText=`height:${h};animation-duration:${dur};animation-name:vu-anim`;
+    wrap.appendChild(b);
+  }
+}
+buildVU();
+
+// Inject vu keyframe
+const vuStyle = document.createElement('style');
+vuStyle.textContent = `@keyframes vu-anim{from{height:4px}to{height:var(--h,36px)}}`;
+document.head.appendChild(vuStyle);
+
+function animateVU(active) {
+  const bars = document.querySelectorAll('.vu-bar');
+  bars.forEach(b=>{
+    const h = active ? (8+Math.random()*32).toFixed(0)+'px' : '4px';
+    b.style.height = h;
+    b.style.transitionDuration = (.05+Math.random()*.15).toFixed(2)+'s';
+    b.style.transition = 'height '+(.05+Math.random()*.15).toFixed(2)+'s ease';
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// GLOBE CANVAS
+// ═══════════════════════════════════════════════════
+const gCvs = $('globeCanvas');
+const gCtx = gCvs.getContext('2d');
+let gW, gH, gCX, gCY, gR;
+let balls = [];
+let globeActive = false;
+let globeAngle = 0;
+let winnerEmerging = false;
+let winnerBall = null;
+let winnerY = 0;
+
+function resizeGlobe() {
+  const rect = gCvs.parentElement.getBoundingClientRect();
+  gW = gCvs.width = rect.width; gH = gCvs.height = rect.height;
+  gCX = gW/2; gCY = gH/2;
+  gR = Math.min(gW,gH)*.42;
+}
+
+function initBalls() {
+  balls = [];
+  const n = Math.min(PARTICIPANTS.length, 40);
+  for (let i=0;i<n;i++) {
+    const angle = Math.random()*Math.PI*2;
+    const radius = (Math.random()*.65)*gR;
+    balls.push({
+      idx: Math.floor(Math.random()*PARTICIPANTS.length),
+      x: gCX + Math.cos(angle)*radius,
+      y: gCY + Math.sin(angle)*radius,
+      vx: (Math.random()-.5)*2.5,
+      vy: (Math.random()-.5)*2.5,
+      r: 16+Math.random()*12,
+      hue: Math.random()<.7 ? 0 : (Math.random()<.5?10:350),
+      spin: (Math.random()-.5)*.08,
+      angle: Math.random()*Math.PI*2,
+      z: Math.random() // depth
+    });
+  }
+  // Make sure winner is in there
+  balls[0].idx = WINNER_IDX;
+  winnerBall = balls[0];
+}
+
+function drawGlobe() {
+  gCtx.clearRect(0,0,gW,gH);
+
+  // Globe circle (glass)
+  const grad = gCtx.createRadialGradient(gCX-gR*.3,gCY-gR*.3,gR*.05,gCX,gCY,gR);
+  grad.addColorStop(0,'rgba(80,0,10,.25)');
+  grad.addColorStop(.6,'rgba(20,0,5,.35)');
+  grad.addColorStop(1,'rgba(0,0,0,.6)');
+  gCtx.beginPath();
+  gCtx.arc(gCX,gCY,gR,0,Math.PI*2);
+  gCtx.fillStyle=grad; gCtx.fill();
+
+  // Globe border glow
+  gCtx.beginPath();
+  gCtx.arc(gCX,gCY,gR,0,Math.PI*2);
+  gCtx.strokeStyle='rgba(200,0,30,.6)';
+  gCtx.lineWidth=2;
+  gCtx.shadowColor='#ff0028'; gCtx.shadowBlur=20;
+  gCtx.stroke(); gCtx.shadowBlur=0;
+
+  // Clip inside globe
+  gCtx.save();
+  gCtx.beginPath();
+  gCtx.arc(gCX,gCY,gR-1,0,Math.PI*2);
+  gCtx.clip();
+
+  // Draw balls sorted by z
+  const sorted = [...balls].sort((a,b)=>a.z-b.z);
+  for (const b of sorted) {
+    const scale = .6+b.z*.4;
+    const bx=b.x, by=b.y, br=b.r*scale;
+    const alpha = .5+b.z*.5;
+
+    // Ball gradient
+    const bg2 = gCtx.createRadialGradient(bx-br*.3,by-br*.3,br*.1,bx,by,br);
+    bg2.addColorStop(0,`hsla(${b.hue},100%,70%,${alpha})`);
+    bg2.addColorStop(.6,`hsla(${b.hue},100%,45%,${alpha})`);
+    bg2.addColorStop(1,`hsla(${b.hue},80%,25%,${alpha})`);
+    gCtx.beginPath();
+    gCtx.arc(bx,by,br,0,Math.PI*2);
+    gCtx.fillStyle=bg2; gCtx.fill();
+
+    // Glow
+    if(b.z>.5) {
+      gCtx.shadowColor=`hsl(${b.hue},100%,60%)`;
+      gCtx.shadowBlur=10*b.z;
+      gCtx.fill();
+      gCtx.shadowBlur=0;
+    }
+
+    // Shine
+    const shine = gCtx.createRadialGradient(bx-br*.4,by-br*.4,0,bx-br*.3,by-br*.3,br*.6);
+    shine.addColorStop(0,'rgba(255,255,255,.35)');
+    shine.addColorStop(1,'transparent');
+    gCtx.beginPath();
+    gCtx.arc(bx,by,br,0,Math.PI*2);
+    gCtx.fillStyle=shine; gCtx.fill();
+
+    // Name text
+    if (b.z>.6 && globeActive) {
+      gCtx.save();
+      gCtx.font = `bold ${Math.max(6,br*.28)}px Rajdhani`;
+      gCtx.textAlign='center'; gCtx.textBaseline='middle';
+      gCtx.fillStyle=`rgba(255,255,255,${alpha*.9})`;
+      gCtx.fillText(PARTICIPANTS[b.idx].split(' ')[0], bx, by);
+      gCtx.restore();
+    }
+  }
+
+  gCtx.restore();
+
+  // Glass reflection
+  const ref = gCtx.createLinearGradient(gCX-gR,gCY-gR,gCX+gR*.3,gCY+gR*.3);
+  ref.addColorStop(0,'rgba(255,255,255,.08)');
+  ref.addColorStop(.4,'rgba(255,255,255,.02)');
+  ref.addColorStop(1,'transparent');
+  gCtx.beginPath();
+  gCtx.arc(gCX,gCY,gR-1,0,Math.PI*2);
+  gCtx.fillStyle=ref; gCtx.fill();
+}
+
+function physicsBalls(intensity=1) {
+  for (const b of balls) {
+    b.x += b.vx * intensity;
+    b.y += b.vy * intensity;
+    b.angle += b.spin;
+    b.z = .3+.7*(.5+.5*Math.sin(b.angle));
+
+    // Bounce off globe wall
+    const dx = b.x-gCX, dy = b.y-gCY;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const maxR = gR - b.r*(.6+b.z*.4);
+    if (dist > maxR) {
+      const nx=dx/dist, ny=dy/dist;
+      b.vx -= 2*b.vx*nx*nx + 2*b.vy*nx*ny;
+      b.vy -= 2*b.vy*ny*ny + 2*b.vx*nx*ny;
+      b.x = gCX + nx*maxR;
+      b.y = gCY + ny*maxR;
+      b.vx *= .85; b.vy *= .85;
+    }
+
+    // Ball-ball simple repel
+    for (const b2 of balls) {
+      if (b2===b) continue;
+      const dx2=b.x-b2.x, dy2=b.y-b2.y;
+      const d2=Math.sqrt(dx2*dx2+dy2*dy2);
+      const minD=b.r+b2.r;
+      if(d2<minD&&d2>0){
+        const f=(minD-d2)/minD*.15;
+        b.vx+=dx2/d2*f; b.vy+=dy2/d2*f;
+        b2.vx-=dx2/d2*f; b2.vy-=dy2/d2*f;
+      }
+    }
+
+    // Random nudge
+    b.vx += (Math.random()-.5)*.15*intensity;
+    b.vy += (Math.random()-.5)*.15*intensity;
+
+    // Speed clamp
+    const spd = Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+    const maxSpd = 3.5*intensity;
+    if(spd>maxSpd){b.vx=b.vx/spd*maxSpd; b.vy=b.vy/spd*maxSpd;}
+    if(spd<.3){b.vx+=(Math.random()-.5)*.5; b.vy+=(Math.random()-.5)*.5;}
+  }
+}
+
+let globeRaf;
+let globeIntensity = 1;
+
+function globeLoop() {
+  if (!globeActive) { drawGlobe(); globeRaf=requestAnimationFrame(globeLoop); return; }
+  physicsBalls(globeIntensity);
+  drawGlobe();
+  globeRaf=requestAnimationFrame(globeLoop);
+}
+
+// ═══════════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════════
+const cfCvs = $('confettiCanvas');
+const cfCtx = cfCvs.getContext('2d');
+let confettis = [];
+
+function resizeCf() {
+  cfCvs.width=window.innerWidth; cfCvs.height=window.innerHeight;
+}
+resizeCf();
+window.addEventListener('resize', resizeCf);
+
+function launchConfetti() {
+  cfCvs.classList.remove('hidden');
+  confettis = [];
+  const colors=['#ff0028','#cc0020','#ff3355','#ff6680','#fff','#ffaa00','#ff4400'];
+  for(let i=0;i<200;i++) confettis.push({
+    x:Math.random()*cfCvs.width,
+    y:-20-Math.random()*100,
+    vx:(Math.random()-.5)*4,
+    vy:2+Math.random()*4,
+    r:4+Math.random()*8,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    rot:Math.random()*360,
+    rotV:(Math.random()-.5)*8,
+    shape:Math.random()<.5?'rect':'circle'
+  });
+  tickConfetti();
+}
+
+function tickConfetti() {
+  cfCtx.clearRect(0,0,cfCvs.width,cfCvs.height);
+  confettis = confettis.filter(c=>c.y<cfCvs.height+50);
+  for(const c of confettis){
+    c.x+=c.vx; c.y+=c.vy; c.rot+=c.rotV;
+    c.vy*=.995;
+    cfCtx.save();
+    cfCtx.translate(c.x,c.y);
+    cfCtx.rotate(c.rot*Math.PI/180);
+    cfCtx.fillStyle=c.color;
+    if(c.shape==='rect'){
+      cfCtx.fillRect(-c.r/2,-c.r/4,c.r,c.r/2);
+    } else {
+      cfCtx.beginPath();cfCtx.arc(0,0,c.r/2,0,Math.PI*2);cfCtx.fill();
+    }
+    cfCtx.restore();
+  }
+  if(confettis.length>0) requestAnimationFrame(tickConfetti);
+}
+
+// ═══════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  $('hudClock').textContent =
+    String(now.getHours()).padStart(2,'0')+':'+
+    String(now.getMinutes()).padStart(2,'0')+':'+
+    String(now.getSeconds()).padStart(2,'0');
+}
+setInterval(updateClock,1000); updateClock();
+
+// ═══════════════════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════════════════
+let cdInterval, cdValue=0;
+function startCountdown(seconds) {
+  cdValue=seconds*100;
+  clearInterval(cdInterval);
+  cdInterval=setInterval(()=>{
+    if(cdValue<=0){clearInterval(cdInterval);return;}
+    cdValue--;
+    const s=Math.floor(cdValue/100);
+    const ms=cdValue%100;
+    const m=Math.floor(s/60);
+    $('cdMin').textContent=String(m).padStart(2,'0');
+    $('cdSec').textContent=String(s%60).padStart(2,'0');
+    $('cdMs').textContent=String(ms).padStart(2,'0');
+  },10);
+}
+
+// ═══════════════════════════════════════════════════
+// VU LOOP
+// ═══════════════════════════════════════════════════
+let vuLoop;
+function startVU() {
+  clearInterval(vuLoop);
+  vuLoop=setInterval(()=>animateVU(true),120);
+}
+function stopVU() {
+  clearInterval(vuLoop);
+  animateVU(false);
+}
+
+// ═══════════════════════════════════════════════════
+// SCREENS FLOW
+// ═══════════════════════════════════════════════════
+
+// --- LOADER ---
+async function runLoader() {
+  let pct=0;
+  const interval=setInterval(()=>{
+    pct=Math.min(100,pct+(Math.random()*4+1));
+    $('loaderPct').textContent=Math.floor(pct)+'%';
+    if(pct>=100){clearInterval(interval);}
+  },40);
+  await sleep(2800);
+  $('introCount').textContent=PARTICIPANTS.length;
+  hide('loaderScreen');
+  show('introScreen');
+}
+
+// --- INTRO BTN ---
+$('btnStart').addEventListener('click',async()=>{
+  flash(120);
+  await sleep(150);
+  hide('introScreen');
+  await runPrep();
+});
+
+// --- PREP ---
+const PREP_LOGS = [
+  '> Carregando lista de participantes...',
+  '> Verificando integridade dos dados...',
+  '> Inicializando gerador aleatório...',
+  '> Calibrando globo de sorteio...',
+  '> Sincronizando relógio oficial...',
+  '> Comprimindo bolas virtuais...',
+  '> Carregando físicas de simulação...',
+  '> Testando sistemas de segurança...',
+  '> Ativando modo cinematográfico...',
+  '> Sistema pronto. Iniciando sorteio...'
+];
+
+async function runPrep() {
+  show('prepScreen');
+  $('prepTotal').textContent=PARTICIPANTS.length;
+  $('prepBalls').textContent=Math.min(PARTICIPANTS.length,40);
+  let shuffleN=0;
+  $('prepShuffle').textContent=shuffleN;
+
+  const logEl=$('prepLog');
+  let pct=0;
+
+  for(let i=0;i<PREP_LOGS.length;i++){
+    await sleep(280);
+    const line=document.createElement('div');
+    line.textContent=PREP_LOGS[i];
+    line.style.color='#cc4455';
+    logEl.appendChild(line);
+    if(logEl.children.length>4) logEl.removeChild(logEl.firstChild);
+
+    pct=Math.min(100,Math.round((i+1)/PREP_LOGS.length*100));
+    $('prepBar').style.width=pct+'%';
+    $('prepPct').textContent=pct+'%';
+    $('prepStatus').textContent=PREP_LOGS[i].replace('> ','').toUpperCase();
+
+    shuffleN+=Math.floor(Math.random()*300+100);
+    $('prepShuffle').textContent=shuffleN;
+  }
+  await sleep(400);
+  hide('prepScreen');
+  await runMachine();
+}
+
+// --- MACHINE ---
+async function runMachine() {
+  show('machineScreen');
+  resizeGlobe();
+  initBalls();
+  globeActive=true;
+  globeLoop();
+  $('hudCount').textContent=PARTICIPANTS.length;
+  $('hudStatus').textContent='EMBARALHANDO';
+  startVU();
+
+  // Phase 1: 10s of intense shuffle
+  $('machineStatus').textContent='EMBARALHANDO PARTICIPANTES...';
+  $('machineStatus').classList.add('active');
+  globeIntensity=2;
+  startCountdown(18);
+  document.getElementById('machineScreen').classList.add('shaking');
+
+  await sleep(3000);
+  flash(60);
+  globeIntensity=3;
+  await sleep(3000);
+  flash(60);
+  globeIntensity=2.5;
+  await sleep(2000);
+
+  // Phase 2: suspense slowdown
+  $('machineStatus').textContent='SELECIONANDO VENCEDOR...';
+  $('hudStatus').textContent='SELECIONANDO';
+  document.getElementById('machineScreen').classList.remove('shaking');
+  globeIntensity=1;
+
+  // Shuffle idx in balls, make winner drift to center
+  for(let i=0;i<6;i++){
+    await sleep(350);
+    // Random shuffling effect
+    for(const b of balls) b.idx=Math.floor(Math.random()*PARTICIPANTS.length);
+    winnerBall.idx=WINNER_IDX;
+  }
+
+  await sleep(1200);
+  globeIntensity=.3;
+
+  await sleep(1000);
+
+  // Phase 3: Winner emerges
+  $('machineStatus').textContent='BOLA SELECIONADA!';
+  $('hudStatus').textContent='VENCEDOR ENCONTRADO';
+  stopVU();
+
+  // Move winner to center
+  const targetX=gCX, targetY=gCY;
+  const steps=60;
+  for(let i=0;i<steps;i++){
+    await sleep(20);
+    winnerBall.x+=(targetX-winnerBall.x)*.12;
+    winnerBall.y+=(targetY-winnerBall.y)*.12;
+    winnerBall.r+=(30-winnerBall.r)*.08;
+    winnerBall.z=1;
+    // Push others away
+    for(const b of balls){
+      if(b===winnerBall)continue;
+      b.x+=(b.x-gCX)*.08;
+      b.y+=(b.y-gCY)*.08;
+    }
+  }
+
+  await sleep(400);
+  flash(200);
+  globeActive=false;
+  cancelAnimationFrame(globeRaf);
+
+  // Show chosen ball overlay
+  const cr=$('chosenReveal');
+  cr.textContent=WINNER;
+  cr.classList.add('show');
+
+  // Flash and shakes
+  for(let i=0;i<4;i++){
+    await sleep(200);
+    flash(60);
+  }
+
+  await sleep(1200);
+
+  // Transition to winner screen
+  flash(300);
+  await sleep(200);
+  hide('machineScreen');
+  await runWinner();
+}
+
+// --- WINNER ---
+async function runWinner() {
+  show('winnerScreen');
+  $('winnerInner').style.animationPlayState='running';
+  await sleep(200);
+  launchConfetti();
+  // Keep re-launching
+  for(let i=0;i<5;i++){
+    await sleep(800);
+    flash(60);
+    launchConfetti();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// KICK OFF
+// ═══════════════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  runLoader();
+});
+
+window.addEventListener('resize', ()=>{
+  if(!$('machineScreen').classList.contains('hidden')) resizeGlobe();
+});
+</script>
+</body>
+</html>
